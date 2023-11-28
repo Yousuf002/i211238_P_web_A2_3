@@ -1,0 +1,111 @@
+<!-- public/profile.html -->
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>User Profile</title>
+</head>
+<body>
+    <h1>User Profile</h1>
+    
+    <div id="profileInfo">
+        <!-- Display user profile information here -->
+    </div>
+
+    <h2>Update Profile</h2>
+    <form id="updateProfileForm">
+        <label for="username">Username:</label>
+        <input type="text" id="username" name="username" required><br>
+
+        <label for="email">Email:</label>
+        <input type="email" id="email" name="email" required><br>
+
+        <button type="submit">Update Profile</button>
+    </form>
+
+    <script>
+        console.log('Script is running!');
+    
+        document.addEventListener('DOMContentLoaded', () => {
+            const urlParams = new URLSearchParams(window.location.search);
+    const token = urlParams.get('token');
+
+    if (token) {
+        // Store the token in localStorage
+        localStorage.setItem('token', token);
+
+        // Fetch user profile on page load
+        fetch('/profile', {
+            method: 'GET',
+            headers: {
+                'Authorization': token
+            }
+        })
+        .then(response => response.json())
+        .then(user => {
+            // Display user profile information
+            console.log('User profile:', user);
+            // Render user profile details on the page as needed
+        })
+        .catch(error => console.error('Error fetching user profile:', error));
+    } else {
+        console.log('No token found in URL.');
+    }
+            // Fetch user profile on page load
+            fetch('/profile', {
+                method: 'GET',
+                headers: {
+                    'Authorization': localStorage.getItem('token')
+                }
+            })
+            .then(response => response.json())
+            .then(user => {
+                console.log('User profile:', user); // Log the user profile
+    
+                // Display user profile information
+                document.getElementById('profileInfo').innerHTML = `
+                    <p>Username: ${user.username}</p>
+                    <p>Email: ${user.email}</p>
+                `;
+    
+                // Set initial values in the update profile form
+                document.getElementById('username').value = user.username;
+                document.getElementById('email').value = user.email;
+            })
+            .catch(error => {
+    console.error('Error fetching user profile:', error);
+});
+            // Handle update profile form submission
+            document.getElementById('updateProfileForm').addEventListener('submit', (event) => {
+                event.preventDefault();
+    
+                const username = document.getElementById('username').value;
+                const email = document.getElementById('email').value;
+    
+                // Send update request to the server
+                fetch('/profile', {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': localStorage.getItem('token')
+                    },
+                    body: JSON.stringify({ username, email })
+                })
+                .then(response => response.json())
+                .then(updatedUser => {
+                    // Display updated user profile information
+                    document.getElementById('profileInfo').innerHTML = `
+                        <p>Username: ${updatedUser.username}</p>
+                        <p>Email: ${updatedUser.email}</p>
+                    `;
+                })
+                .catch(error => console.error(error));
+            });
+        });
+    </script>
+    
+    
+</body>
+</html>
